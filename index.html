@@ -35,11 +35,12 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
+    /* Default untuk desktop: tidak bisa scroll */
     overflow: hidden; 
     touch-action: none; 
   }
 
-  /* ===== TOMBOL KEMBALI (Fade in + Slide down) ===== */
+  /* ===== TOMBOL KEMBALI ===== */
   .back-btn {
     position: fixed;
     top: 20px;
@@ -60,13 +61,11 @@
     box-shadow: var(--shadow);
     z-index: 1000;
     
-    /* Animasi untuk memunculkan tombol */
     opacity: 0;
     transform: translateY(-20px);
     pointer-events: none;
   }
   
-  /* Class untuk memicu animasi muncul */
   .back-btn.show {
     animation: slideDownFade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     pointer-events: auto;
@@ -128,7 +127,6 @@
     display: none; flex-wrap: wrap; gap: 20px;
     justify-content: center; animation: fadeIn 0.4s ease-out;
     width: 100%; max-width: 1200px;
-    /* Memberi ruang untuk tombol kembali di desktop */
     padding-top: 10px; 
   }
   .app-container.active { display: flex; }
@@ -228,14 +226,16 @@
     color: var(--ink);
   }
 
-  /* ===== MEDIA QUERY UNTUK HP (Dibuat Lebih Lega) ===== */
+  /* ===== MEDIA QUERY UNTUK HP ===== */
   @media (max-width: 800px) {
     body { 
       justify-content: flex-start; 
-      padding: 60px 10px 10px 10px; /* Padding atas untuk tombol back */
+      padding: 80px 10px 30px 10px; /* Padding atas untuk tombol, bawah agar tidak mentok */
+      overflow-y: auto; /* IZINKAN SCROLL DI HP */
+      touch-action: pan-y; /* Izinkan scroll vertikal di area non-canvas */
     }
     
-    #menu-screen { padding: 25px 20px; width: 100%; max-width: 400px; }
+    #menu-screen { padding: 25px 20px; width: 100%; max-width: 400px; margin-top: 20px; }
     h1 { font-size: 2rem; }
     
     .app-container { 
@@ -243,6 +243,7 @@
       align-items: center; 
       gap: 15px; 
       padding-top: 0; 
+      width: 100%;
     }
     
     .panel { 
@@ -253,18 +254,16 @@
     
     h2 { font-size: 1rem; padding-bottom: 8px; margin-bottom: 10px; }
     
-    /* Input matriks disesuaikan agar tidak sesak */
     .cells.grid-2, .cells.grid-3 { width: 100%; gap: 6px; }
     .cells input { padding: 8px; font-size: 0.9rem; border-width: 2px; }
     
     .info { font-size: 0.8rem; padding: 10px; }
     .hint { font-size: 0.75rem; padding: 6px 10px; }
 
-    /* Sembunyikan tombol zoom +/- di HP karena sudah bisa pinch-to-zoom */
     .zoom-controls { display: none; }
     .zoom-badge { bottom: 8px; left: 8px; font-size: 0.7rem; padding: 2px 8px; }
     
-    .back-btn { top: 10px; left: 10px; padding: 6px 12px; font-size: 0.8rem; }
+    .back-btn { top: 15px; left: 15px; padding: 8px 14px; font-size: 0.85rem; }
   }
 </style>
 </head>
