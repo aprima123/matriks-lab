@@ -2,21 +2,19 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Visualisasi Matriks Interaktif</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap');
 
   :root {
-    /* Palet Warna Bergaya Notebook/Neo-Brutalism */
-    --bg-page: #f4f1ea;       /* Warna kertas krem */
-    --grid-color: #e3ded1;    /* Garis grid kertas */
-    --ink: #111111;           /* Hitam pekat untuk teks & border */
-    
-    --hl-blue: #60c3ff;       /* Stabilo Biru */
-    --hl-green: #a3f160;      /* Stabilo Hijau Lime */
-    --hl-yellow: #ffe566;     /* Stabilo Kuning */
-    --hl-purple: #c48aff;     /* Stabilo Ungu */
-    
+    --bg-page: #f4f1ea;
+    --grid-color: #e3ded1;
+    --ink: #111111;
+    --hl-blue: #60c3ff;
+    --hl-green: #a3f160;
+    --hl-yellow: #ffe566;
+    --hl-purple: #c48aff;
     --shadow: 4px 4px 0px var(--ink);
   }
 
@@ -26,7 +24,6 @@
     margin: 0;
     min-height: 100vh;
     background-color: var(--bg-page);
-    /* Membuat pola grid kertas */
     background-image: 
       linear-gradient(var(--grid-color) 1px, transparent 1px),
       linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -38,93 +35,14 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
-    overflow-x: hidden;
+    /* Mencegah scroll berlebih saat main game/drag di HP */
+    overflow: hidden; 
+    touch-action: none; 
   }
 
-  /* ===== LAYAR MENU ===== */
-  #menu-screen {
-    text-align: center;
-    animation: fadeIn 0.4s ease-out;
-    max-width: 600px;
-    background: #ffffff;
-    padding: 40px;
-    border: 3px solid var(--ink);
-    box-shadow: var(--shadow);
-    border-radius: 12px;
-  }
-  h1 { 
-    font-size: 2.8rem; 
-    margin-top: 0;
-    margin-bottom: 10px; 
-    color: var(--ink); 
-    text-transform: uppercase;
-    letter-spacing: -1px;
-  }
-  p.subtitle { 
-    font-size: 1.1rem; 
-    color: #555; 
-    margin-bottom: 30px; 
-    font-weight: 500;
-  }
-  
-  .menu-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
-  .menu-btn {
-    background: var(--hl-green);
-    border: 3px solid var(--ink);
-    color: var(--ink);
-    padding: 20px 30px;
-    border-radius: 8px;
-    font-size: 1.2rem;
-    font-family: inherit;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.1s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    min-width: 180px;
-    box-shadow: var(--shadow);
-  }
-  .menu-btn:nth-child(2) {
-    background: var(--hl-blue);
-  }
-  .menu-btn:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0px var(--ink);
-  }
-  .menu-btn:active {
-    transform: translate(2px, 2px);
-    box-shadow: 0px 0px 0px var(--ink);
-  }
-  .menu-btn .icon { font-size: 2.5rem; }
-
-  /* ===== AREA KONTEN (2x2 / 3x3) ===== */
-  .app-container {
-    display: none;
-    flex-wrap: wrap;
-    gap: 30px;
-    justify-content: center;
-    animation: fadeIn 0.4s ease-out;
-  }
-  .app-container.active { display: flex; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .panel {
-    background: #ffffff;
-    border: 3px solid var(--ink);
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: var(--shadow);
-  }
-
-  /* Tombol Kembali */
+  /* Memperbaiki posisi tombol menu agar tidak melompat */
   .back-btn {
-    position: absolute;
+    position: fixed;
     top: 20px;
     left: 20px;
     background: var(--hl-yellow);
@@ -140,6 +58,7 @@
     gap: 8px;
     transition: 0.1s;
     box-shadow: var(--shadow);
+    z-index: 100;
   }
   .back-btn:hover {
     transform: translate(-2px, -2px);
@@ -150,96 +69,157 @@
     box-shadow: 0px 0px 0px var(--ink);
   }
 
+  /* ===== LAYAR MENU ===== */
+  #menu-screen {
+    text-align: center;
+    animation: fadeIn 0.4s ease-out;
+    max-width: 600px;
+    background: #ffffff;
+    padding: 40px;
+    border: 3px solid var(--ink);
+    box-shadow: var(--shadow);
+    border-radius: 12px;
+    z-index: 10;
+  }
+  h1 { 
+    font-size: 2.8rem; 
+    margin-top: 0; margin-bottom: 10px; 
+    color: var(--ink); text-transform: uppercase; letter-spacing: -1px;
+  }
+  p.subtitle { 
+    font-size: 1.1rem; color: #555; margin-bottom: 30px; font-weight: 500;
+  }
+  
+  .menu-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+  .menu-btn {
+    background: var(--hl-green);
+    border: 3px solid var(--ink);
+    color: var(--ink);
+    padding: 20px 30px; border-radius: 8px; font-size: 1.2rem;
+    font-family: inherit; font-weight: 700; cursor: pointer;
+    transition: all 0.1s; display: flex; flex-direction: column;
+    align-items: center; gap: 10px; min-width: 180px;
+    box-shadow: var(--shadow);
+  }
+  .menu-btn:nth-child(2) { background: var(--hl-blue); }
+  .menu-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--ink); }
+  .menu-btn:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px var(--ink); }
+  .menu-btn .icon { font-size: 2.5rem; }
+
+  /* ===== AREA KONTEN (2x2 / 3x3) ===== */
+  .app-container {
+    display: none; flex-wrap: wrap; gap: 20px;
+    justify-content: center; animation: fadeIn 0.4s ease-out;
+    width: 100%; max-width: 1200px;
+  }
+  .app-container.active { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel {
+    background: #ffffff;
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+
   h2 { 
-    margin: 0 0 20px 0; 
-    font-size: 1.2rem; 
-    font-weight: 700;
-    text-transform: uppercase; 
-    border-bottom: 3px solid var(--ink);
+    margin: 0 0 15px 0; font-size: 1.1rem; font-weight: 700;
+    text-transform: uppercase; border-bottom: 3px solid var(--ink);
     padding-bottom: 10px;
   }
 
   /* ===== MATRIKS INPUT ===== */
-  .brackets { display: flex; gap: 12px; align-items: stretch; margin-bottom: 16px; }
-  .bracket { width: 14px; border: 3px solid var(--ink); }
-  .bracket.left { border-right: none; border-radius: 8px 0 0 8px; }
-  .bracket.right { border-left: none; border-radius: 0 8px 8px 0; }
+  .brackets { display: flex; gap: 8px; align-items: stretch; margin-bottom: 16px; }
+  .bracket { width: 10px; border: 3px solid var(--ink); }
+  .bracket.left { border-right: none; border-radius: 6px 0 0 6px; }
+  .bracket.right { border-left: none; border-radius: 0 6px 6px 0; }
 
-  .matrix-wrap { display: flex; flex-direction: column; gap: 12px; }
-  .row { display: flex; align-items: center; gap: 12px; }
+  .matrix-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .row { display: flex; align-items: center; gap: 8px; }
   
   .row .tag {
-    font-size: 0.9rem; font-weight: 700; width: 28px; text-align: center;
-    border-radius: 6px; padding: 6px 0; border: 2px solid var(--ink);
+    font-size: 0.8rem; font-weight: 700; width: 24px; text-align: center;
+    border-radius: 4px; padding: 4px 0; border: 2px solid var(--ink);
   }
   
-  /* Warna Tag dengan Stabilo */
   .row.x .tag { background: var(--hl-blue); }
   .row.y .tag { background: var(--hl-green); }
   .row.z .tag { background: var(--hl-purple); }
 
-  .cells { display: grid; gap: 10px; }
-  .cells.grid-2 { grid-template-columns: 1fr 1fr; width: 220px; }
-  .cells.grid-3 { grid-template-columns: 1fr 1fr 1fr; width: 280px; }
+  .cells { display: grid; gap: 8px; }
+  .cells.grid-2 { grid-template-columns: 1fr 1fr; width: 160px; }
+  .cells.grid-3 { grid-template-columns: 1fr 1fr 1fr; width: 220px; }
   
   .cells input {
-    width: 100%; padding: 12px; font-size: 1.1rem; text-align: center;
-    background: #ffffff; color: var(--ink); border-radius: 8px;
+    width: 100%; padding: 10px; font-size: 1rem; text-align: center;
+    background: #ffffff; color: var(--ink); border-radius: 6px;
     outline: none; transition: 0.1s; border: 3px solid var(--ink);
     font-family: inherit; font-weight: 700;
   }
-  .cells input:focus { 
-    background: var(--bg-page);
-    box-shadow: inset 3px 3px 0px rgba(0,0,0,0.1); 
-  }
+  .cells input:focus { background: var(--bg-page); box-shadow: inset 2px 2px 0px rgba(0,0,0,0.1); }
 
   /* ===== INFO & HINT ===== */
   .info { 
-    margin-top: 20px; 
-    font-size: 0.95rem; 
-    line-height: 1.6; 
-    background: var(--bg-page);
-    padding: 16px;
-    border: 2px dashed var(--ink);
-    border-radius: 8px;
+    margin-top: 15px; font-size: 0.85rem; line-height: 1.5; 
+    background: var(--bg-page); padding: 12px;
+    border: 2px dashed var(--ink); border-radius: 6px;
   }
   .info b { font-weight: 700; }
   
   .hint { 
-    font-size: 0.85rem; 
-    margin-top: 20px; 
-    font-weight: 500;
-    background: var(--hl-yellow);
-    padding: 10px 14px;
-    border: 2px solid var(--ink);
-    border-radius: 6px;
+    font-size: 0.8rem; margin-top: 15px; font-weight: 500;
+    background: var(--hl-yellow); padding: 8px 12px;
+    border: 2px solid var(--ink); border-radius: 6px;
   }
 
   /* ===== CANVAS ===== */
-  .canvas-wrap { position: relative; }
+  .canvas-wrap { position: relative; display: flex; flex-direction: column; }
+  
+  /* Menyesuaikan ukuran canvas agar responsif di HP */
   canvas { 
     border-radius: 8px; 
-    background: #1a1a1e; /* Kanvas gelap agar warna neon/stabilo menyala */
+    background: #1a1a1e; 
     border: 3px solid var(--ink); 
     display: block; 
     cursor: grab; 
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    touch-action: none; /* Mencegah browser melakukan scroll saat canvas di-drag */
   }
   canvas:active { cursor: grabbing; }
 
-  .zoom-controls { position: absolute; top: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .zoom-controls { position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column; gap: 6px; }
   .zoom-controls button {
-    width: 40px; height: 40px; border-radius: 8px; border: 3px solid var(--ink);
-    background: #ffffff; color: var(--ink); font-size: 1.2rem; cursor: pointer;
-    font-weight: 700; transition: 0.1s;
-    box-shadow: 2px 2px 0px var(--ink);
+    width: 36px; height: 36px; border-radius: 6px; border: 3px solid var(--ink);
+    background: #ffffff; color: var(--ink); font-size: 1.1rem; cursor: pointer;
+    font-weight: 700; transition: 0.1s; box-shadow: 2px 2px 0px var(--ink);
   }
   .zoom-controls button:hover { background: var(--hl-yellow); }
   .zoom-controls button:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px var(--ink); }
   
   .zoom-badge {
-    position: absolute; bottom: 16px; left: 16px; font-size: 0.85rem; font-weight: 700;
-    background: #ffffff; padding: 6px 12px; border-radius: 6px; border: 2px solid var(--ink);
+    position: absolute; bottom: 12px; left: 12px; font-size: 0.75rem; font-weight: 700;
+    background: #ffffff; padding: 4px 10px; border-radius: 4px; border: 2px solid var(--ink);
     color: var(--ink);
+  }
+
+  /* ===== MEDIA QUERY UNTUK HP ===== */
+  @media (max-width: 800px) {
+    body { justify-content: flex-start; padding-top: 80px; } /* Beri ruang untuk tombol back */
+    #menu-screen { padding: 20px; width: 90vw; }
+    h1 { font-size: 2rem; }
+    .app-container { flex-direction: column; align-items: center; gap: 15px; }
+    .panel { width: 95vw; max-width: 450px; padding: 15px; }
+    .cells.grid-2 { width: 100%; }
+    .cells.grid-3 { width: 100%; }
+    .back-btn { top: 10px; left: 10px; padding: 8px 15px; font-size: 0.9rem; }
   }
 </style>
 </head>
@@ -289,7 +269,7 @@
       </div>
 
       <div class="info" id="info-2x2"></div>
-      <div class="hint">Scroll: <b>Zoom</b> | Drag: <b>Geser</b></div>
+      <div class="hint">1 Jari: <b>Geser</b> | 2 Jari: <b>Zoom</b></div>
     </div>
 
     <div class="panel canvas-wrap">
@@ -342,7 +322,7 @@
       </div>
 
       <div class="info" id="info-3x3"></div>
-      <div class="hint">Drag Kiri: <b>Putar</b> | Drag Kanan: <b>Geser</b> | Scroll: <b>Zoom</b></div>
+      <div class="hint">1 Jari: <b>Putar</b> | 2 Jari: <b>Zoom</b></div>
     </div>
 
     <div class="panel canvas-wrap">
@@ -432,14 +412,12 @@ function drawGrid2() {
     ctx2.beginPath(); ctx2.moveTo(0,py); ctx2.lineTo(W2,py); ctx2.stroke();
   }
 
-  // Sumbu X & Y
   ctx2.lineWidth = 2;
   ctx2.strokeStyle = 'rgba(255, 42, 85, 0.8)';
   ctx2.beginPath(); ctx2.moveTo(0,view2.cy); ctx2.lineTo(W2,view2.cy); ctx2.stroke();
   ctx2.strokeStyle = 'rgba(0, 255, 136, 0.8)';
   ctx2.beginPath(); ctx2.moveTo(view2.cx,0); ctx2.lineTo(view2.cx,H2); ctx2.stroke();
 
-  // Ticks
   ctx2.fillStyle = '#888'; ctx2.font = '11px monospace';
   ctx2.textAlign='center'; ctx2.textBaseline='top';
   for(let x=startX; x<=endX+1e-9; x+=step){
@@ -492,26 +470,22 @@ function draw2D() {
   const iPrime = [a, c];
   const jPrime = [b, d];
 
-  // Parallelogram
   const pts = [ [0,0], iPrime, [iPrime[0]+jPrime[0], iPrime[1]+jPrime[1]], jPrime ].map(([x,y])=>w2p2(x,y));
   ctx2.save();
   ctx2.beginPath(); ctx2.moveTo(...pts[0]);
   for(let k=1;k<pts.length;k++) ctx2.lineTo(...pts[k]);
   ctx2.closePath();
-  ctx2.fillStyle = 'rgba(181, 0, 255, 0.15)'; // Ungu Neon
+  ctx2.fillStyle = 'rgba(181, 0, 255, 0.15)';
   ctx2.strokeStyle = 'rgba(181, 0, 255, 0.8)';
   ctx2.lineWidth = 2; ctx2.fill(); ctx2.stroke();
   ctx2.restore();
 
-  // Vektor Asli
   arrow2(0,0, 1,0, 'rgba(255, 42, 85, 0.5)', {dashed:true, width:2});
   arrow2(0,0, 0,1, 'rgba(0, 255, 136, 0.5)', {dashed:true, width:2});
 
-  // Vektor Hasil
   arrow2(0,0, iPrime[0], iPrime[1], '#ff2a55', { width:3.5, label:`i' (${fmt(iPrime[0])}, ${fmt(iPrime[1])})` });
   arrow2(0,0, jPrime[0], jPrime[1], '#00ff88', { width:3.5, label:`j' (${fmt(jPrime[0])}, ${fmt(jPrime[1])})` });
 
-  // Titik Ujung (Stabilo Kuning & Ungu)
   const dot2 = (x,y,color) => {
     const [px,py] = w2p2(x,y);
     ctx2.fillStyle = color; ctx2.beginPath(); ctx2.arc(px,py,5,0,Math.PI*2); ctx2.fill();
@@ -519,7 +493,6 @@ function draw2D() {
   dot2(iPrime[0],iPrime[1],'#ffe566');
   dot2(jPrime[0],jPrime[1],'#c48aff');
 
-  // Update Info
   const tr = a+d, det = a*d-b*c;
   const angleI = Math.atan2(iPrime[1], iPrime[0]) * 180/Math.PI;
   const angleJ = Math.atan2(jPrime[1], jPrime[0]) * 180/Math.PI;
@@ -621,7 +594,6 @@ function draw3D() {
   ctx3.clearRect(0,0,W3,H3);
   drawGrid3D();
 
-  // Sumbu 3D (Neon)
   drawLine3D([-4,0,0], [4,0,0], 'rgba(255, 42, 85, 0.6)');
   drawLine3D([0,-4,0], [0,4,0], 'rgba(0, 255, 136, 0.6)');
   drawLine3D([0,0,-4], [0,0,4], 'rgba(0, 210, 255, 0.6)');
@@ -670,7 +642,7 @@ function fmt(n) {
 }
 
 // ==========================================
-// EVENT LISTENERS
+// EVENT LISTENERS - MOUSE (DESKTOP)
 // ==========================================
 ['m2_00', 'm2_01', 'm2_10', 'm2_11'].forEach(id => document.getElementById(id).addEventListener('input', draw2D));
 
@@ -678,7 +650,9 @@ cv2.addEventListener('wheel', (ev) => {
   if(!document.getElementById('app-2x2').classList.contains('active')) return;
   ev.preventDefault();
   const rect = cv2.getBoundingClientRect();
-  const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
+  // Skala ulang koordinat mouse relatif terhadap ukuran canvas yang di CSS
+  const mx = (ev.clientX - rect.left) * (cv2.width / rect.width); 
+  const my = (ev.clientY - rect.top) * (cv2.height / rect.height);
   const [wx, wy] = p2w2(mx, my);
   const factor = ev.deltaY < 0 ? 1.15 : 1/1.15;
   view2.scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, view2.scale * factor));
@@ -691,7 +665,10 @@ let isDragging2 = false, last2 = null;
 cv2.addEventListener('mousedown', (ev) => { isDragging2 = true; last2 = {x:ev.clientX, y:ev.clientY}; });
 window.addEventListener('mousemove', (ev) => {
   if(!isDragging2) return;
-  view2.cx += ev.clientX - last2.x; view2.cy += ev.clientY - last2.y;
+  const rect = cv2.getBoundingClientRect();
+  const ratio = cv2.width / rect.width; // Konversi gerakan mouse ke ukuran internal canvas
+  view2.cx += (ev.clientX - last2.x) * ratio; 
+  view2.cy += (ev.clientY - last2.y) * ratio;
   last2 = {x:ev.clientX, y:ev.clientY};
   draw2D();
 });
@@ -738,6 +715,91 @@ cv3.addEventListener('wheel', (e) => {
 document.getElementById('z3_in').onclick = () => { cam.dist = Math.max(MIN_DIST, cam.dist * 0.8); draw3D(); };
 document.getElementById('z3_out').onclick = () => { cam.dist = Math.min(MAX_DIST, cam.dist * 1.25); draw3D(); };
 document.getElementById('z3_reset').onclick = () => { cam = { yaw:-0.6, pitch:0.5, dist:8, panX:0, panY:0, scale:70 }; draw3D(); };
+
+// ==========================================
+// EVENT LISTENERS - TOUCH (MOBILE)
+// ==========================================
+// Fungsi bantu untuk menghitung jarak antar dua jari (Pinch Zoom)
+function getTouchDist(touches) {
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+
+// --- Touch 2D ---
+let touchDist2 = 0, lastTouch2 = null;
+
+cv2.addEventListener('touchstart', (ev) => {
+  ev.preventDefault();
+  if(ev.touches.length === 1) {
+    lastTouch2 = {x: ev.touches[0].clientX, y: ev.touches[0].clientY};
+  } else if(ev.touches.length === 2) {
+    touchDist2 = getTouchDist(ev.touches);
+  }
+}, {passive: false});
+
+cv2.addEventListener('touchmove', (ev) => {
+  ev.preventDefault();
+  const rect = cv2.getBoundingClientRect();
+  const ratio = cv2.width / rect.width;
+
+  if(ev.touches.length === 1 && lastTouch2) {
+    // Geser (Pan)
+    const dx = ev.touches[0].clientX - lastTouch2.x;
+    const dy = ev.touches[0].clientY - lastTouch2.y;
+    view2.cx += dx * ratio;
+    view2.cy += dy * ratio;
+    lastTouch2 = {x: ev.touches[0].clientX, y: ev.touches[0].clientY};
+    draw2D();
+  } else if(ev.touches.length === 2) {
+    // Zoom (Pinch)
+    const newDist = getTouchDist(ev.touches);
+    if(touchDist2 > 0) {
+      const factor = newDist / touchDist2;
+      view2.scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, view2.scale * factor));
+      draw2D();
+    }
+    touchDist2 = newDist;
+  }
+}, {passive: false});
+
+cv2.addEventListener('touchend', () => { lastTouch2 = null; touchDist2 = 0; });
+
+// --- Touch 3D ---
+let touchDist3 = 0, lastTouch3 = null;
+
+cv3.addEventListener('touchstart', (ev) => {
+  ev.preventDefault();
+  if(ev.touches.length === 1) {
+    lastTouch3 = {x: ev.touches[0].clientX, y: ev.touches[0].clientY};
+  } else if(ev.touches.length === 2) {
+    touchDist3 = getTouchDist(ev.touches);
+  }
+}, {passive: false});
+
+cv3.addEventListener('touchmove', (ev) => {
+  ev.preventDefault();
+  if(ev.touches.length === 1 && lastTouch3) {
+    // Rotasi (Putar)
+    const dx = ev.touches[0].clientX - lastTouch3.x;
+    const dy = ev.touches[0].clientY - lastTouch3.y;
+    cam.yaw += dx * 0.01;
+    cam.pitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, cam.pitch + dy * 0.01));
+    lastTouch3 = {x: ev.touches[0].clientX, y: ev.touches[0].clientY};
+    draw3D();
+  } else if(ev.touches.length === 2) {
+    // Zoom (Pinch)
+    const newDist = getTouchDist(ev.touches);
+    if(touchDist3 > 0) {
+      const factor = touchDist3 / newDist; // Perhatikan pembagian terbalik untuk jarak kamera
+      cam.dist = Math.max(MIN_DIST, Math.min(MAX_DIST, cam.dist * factor));
+      draw3D();
+    }
+    touchDist3 = newDist;
+  }
+}, {passive: false});
+
+cv3.addEventListener('touchend', () => { lastTouch3 = null; touchDist3 = 0; });
 
 </script>
 </body>
