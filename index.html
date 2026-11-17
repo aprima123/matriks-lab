@@ -35,12 +35,11 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
-    /* Mencegah scroll berlebih saat main game/drag di HP */
     overflow: hidden; 
     touch-action: none; 
   }
 
-  /* Memperbaiki posisi tombol menu agar tidak melompat */
+  /* ===== TOMBOL KEMBALI (Fade in + Slide down) ===== */
   .back-btn {
     position: fixed;
     top: 20px;
@@ -48,18 +47,36 @@
     background: var(--hl-yellow);
     border: 3px solid var(--ink);
     color: var(--ink);
-    padding: 10px 20px;
+    padding: 8px 16px;
     border-radius: 8px;
     cursor: pointer;
     font-family: inherit;
     font-weight: 700;
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
-    gap: 8px;
-    transition: 0.1s;
+    gap: 6px;
+    transition: transform 0.1s, box-shadow 0.1s;
     box-shadow: var(--shadow);
-    z-index: 100;
+    z-index: 1000;
+    
+    /* Animasi untuk memunculkan tombol */
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
   }
+  
+  /* Class untuk memicu animasi muncul */
+  .back-btn.show {
+    animation: slideDownFade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    pointer-events: auto;
+  }
+
+  @keyframes slideDownFade {
+    0% { opacity: 0; transform: translateY(-30px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
   .back-btn:hover {
     transform: translate(-2px, -2px);
     box-shadow: 6px 6px 0px var(--ink);
@@ -111,6 +128,8 @@
     display: none; flex-wrap: wrap; gap: 20px;
     justify-content: center; animation: fadeIn 0.4s ease-out;
     width: 100%; max-width: 1200px;
+    /* Memberi ruang untuk tombol kembali di desktop */
+    padding-top: 10px; 
   }
   .app-container.active { display: flex; }
 
@@ -134,7 +153,7 @@
   }
 
   /* ===== MATRIKS INPUT ===== */
-  .brackets { display: flex; gap: 8px; align-items: stretch; margin-bottom: 16px; }
+  .brackets { display: flex; gap: 8px; align-items: stretch; margin-bottom: 15px; }
   .bracket { width: 10px; border: 3px solid var(--ink); }
   .bracket.left { border-right: none; border-radius: 6px 0 0 6px; }
   .bracket.right { border-left: none; border-radius: 0 6px 6px 0; }
@@ -180,7 +199,6 @@
   /* ===== CANVAS ===== */
   .canvas-wrap { position: relative; display: flex; flex-direction: column; }
   
-  /* Menyesuaikan ukuran canvas agar responsif di HP */
   canvas { 
     border-radius: 8px; 
     background: #1a1a1e; 
@@ -191,7 +209,7 @@
     max-width: 500px;
     height: auto;
     aspect-ratio: 1 / 1;
-    touch-action: none; /* Mencegah browser melakukan scroll saat canvas di-drag */
+    touch-action: none; 
   }
   canvas:active { cursor: grabbing; }
 
@@ -210,16 +228,43 @@
     color: var(--ink);
   }
 
-  /* ===== MEDIA QUERY UNTUK HP ===== */
+  /* ===== MEDIA QUERY UNTUK HP (Dibuat Lebih Lega) ===== */
   @media (max-width: 800px) {
-    body { justify-content: flex-start; padding-top: 80px; } /* Beri ruang untuk tombol back */
-    #menu-screen { padding: 20px; width: 90vw; }
+    body { 
+      justify-content: flex-start; 
+      padding: 60px 10px 10px 10px; /* Padding atas untuk tombol back */
+    }
+    
+    #menu-screen { padding: 25px 20px; width: 100%; max-width: 400px; }
     h1 { font-size: 2rem; }
-    .app-container { flex-direction: column; align-items: center; gap: 15px; }
-    .panel { width: 95vw; max-width: 450px; padding: 15px; }
-    .cells.grid-2 { width: 100%; }
-    .cells.grid-3 { width: 100%; }
-    .back-btn { top: 10px; left: 10px; padding: 8px 15px; font-size: 0.9rem; }
+    
+    .app-container { 
+      flex-direction: column; 
+      align-items: center; 
+      gap: 15px; 
+      padding-top: 0; 
+    }
+    
+    .panel { 
+      width: 100%; 
+      max-width: 500px; 
+      padding: 15px; 
+    }
+    
+    h2 { font-size: 1rem; padding-bottom: 8px; margin-bottom: 10px; }
+    
+    /* Input matriks disesuaikan agar tidak sesak */
+    .cells.grid-2, .cells.grid-3 { width: 100%; gap: 6px; }
+    .cells input { padding: 8px; font-size: 0.9rem; border-width: 2px; }
+    
+    .info { font-size: 0.8rem; padding: 10px; }
+    .hint { font-size: 0.75rem; padding: 6px 10px; }
+
+    /* Sembunyikan tombol zoom +/- di HP karena sudah bisa pinch-to-zoom */
+    .zoom-controls { display: none; }
+    .zoom-badge { bottom: 8px; left: 8px; font-size: 0.7rem; padding: 2px 8px; }
+    
+    .back-btn { top: 10px; left: 10px; padding: 6px 12px; font-size: 0.8rem; }
   }
 </style>
 </head>
@@ -241,10 +286,11 @@
     </div>
   </div>
 
+  <!-- TOMBOL KEMBALI (Diletakkan di luar container aplikasi) -->
+  <button id="global-back-btn" class="back-btn" onclick="kembaliKeMenu()">← MENU</button>
+
   <!-- ================= APP 2x2 ================= -->
   <div id="app-2x2" class="app-container">
-    <button class="back-btn" onclick="kembaliKeMenu()">← MENU</button>
-    
     <div class="panel">
       <h2>Matriks 2×2</h2>
       <div class="brackets">
@@ -286,8 +332,6 @@
 
   <!-- ================= APP 3x3 ================= -->
   <div id="app-3x3" class="app-container">
-    <button class="back-btn" onclick="kembaliKeMenu()">← MENU</button>
-
     <div class="panel">
       <h2>Matriks 3×3</h2>
       <div class="brackets">
@@ -341,27 +385,41 @@
 // ==========================================
 // NAVIGASI MENU
 // ==========================================
+const backBtn = document.getElementById('global-back-btn');
+
 function bukaApp(mode) {
   document.getElementById('menu-screen').style.display = 'none';
   document.querySelectorAll('.app-container').forEach(el => el.classList.remove('active'));
   
+  // Sembunyikan tombol kembali dulu setiap kali ganti mode
+  backBtn.classList.remove('show');
+
   if(mode === '2x2') {
     document.getElementById('app-2x2').classList.add('active');
-    setTimeout(() => { draw2D(); }, 50); 
+    // Render grafik, lalu munculkan tombol setelah jeda sedikit
+    setTimeout(() => { 
+      draw2D(); 
+      backBtn.classList.add('show'); // Animasi fade in + slide down
+    }, 50); 
   } else {
     document.getElementById('app-3x3').classList.add('active');
-    setTimeout(() => { draw3D(); }, 50);
+    setTimeout(() => { 
+      draw3D();
+      backBtn.classList.add('show'); 
+    }, 50);
   }
 }
 
 function kembaliKeMenu() {
   document.querySelectorAll('.app-container').forEach(el => el.classList.remove('active'));
   document.getElementById('menu-screen').style.display = 'block';
+  backBtn.classList.remove('show'); // Sembunyikan tombol saat di menu
 }
 
 // ==========================================
 // LOGIKA 2D (Matriks 2x2)
 // ==========================================
+// ... (Logika 2D tetap sama persis seperti sebelumnya) ...
 const cv2 = document.getElementById('cv2');
 const ctx2 = cv2.getContext('2d');
 const W2 = cv2.width, H2 = cv2.height;
@@ -508,6 +566,7 @@ function draw2D() {
 // ==========================================
 // LOGIKA 3D (Matriks 3x3)
 // ==========================================
+// ... (Logika 3D tetap sama persis seperti sebelumnya) ...
 const cv3 = document.getElementById('cv3');
 const ctx3 = cv3.getContext('2d');
 const W3 = cv3.width, H3 = cv3.height;
@@ -650,7 +709,6 @@ cv2.addEventListener('wheel', (ev) => {
   if(!document.getElementById('app-2x2').classList.contains('active')) return;
   ev.preventDefault();
   const rect = cv2.getBoundingClientRect();
-  // Skala ulang koordinat mouse relatif terhadap ukuran canvas yang di CSS
   const mx = (ev.clientX - rect.left) * (cv2.width / rect.width); 
   const my = (ev.clientY - rect.top) * (cv2.height / rect.height);
   const [wx, wy] = p2w2(mx, my);
@@ -666,7 +724,7 @@ cv2.addEventListener('mousedown', (ev) => { isDragging2 = true; last2 = {x:ev.cl
 window.addEventListener('mousemove', (ev) => {
   if(!isDragging2) return;
   const rect = cv2.getBoundingClientRect();
-  const ratio = cv2.width / rect.width; // Konversi gerakan mouse ke ukuran internal canvas
+  const ratio = cv2.width / rect.width; 
   view2.cx += (ev.clientX - last2.x) * ratio; 
   view2.cy += (ev.clientY - last2.y) * ratio;
   last2 = {x:ev.clientX, y:ev.clientY};
@@ -719,16 +777,13 @@ document.getElementById('z3_reset').onclick = () => { cam = { yaw:-0.6, pitch:0.
 // ==========================================
 // EVENT LISTENERS - TOUCH (MOBILE)
 // ==========================================
-// Fungsi bantu untuk menghitung jarak antar dua jari (Pinch Zoom)
 function getTouchDist(touches) {
   const dx = touches[0].clientX - touches[1].clientX;
   const dy = touches[0].clientY - touches[1].clientY;
   return Math.sqrt(dx*dx + dy*dy);
 }
 
-// --- Touch 2D ---
 let touchDist2 = 0, lastTouch2 = null;
-
 cv2.addEventListener('touchstart', (ev) => {
   ev.preventDefault();
   if(ev.touches.length === 1) {
@@ -744,7 +799,6 @@ cv2.addEventListener('touchmove', (ev) => {
   const ratio = cv2.width / rect.width;
 
   if(ev.touches.length === 1 && lastTouch2) {
-    // Geser (Pan)
     const dx = ev.touches[0].clientX - lastTouch2.x;
     const dy = ev.touches[0].clientY - lastTouch2.y;
     view2.cx += dx * ratio;
@@ -752,7 +806,6 @@ cv2.addEventListener('touchmove', (ev) => {
     lastTouch2 = {x: ev.touches[0].clientX, y: ev.touches[0].clientY};
     draw2D();
   } else if(ev.touches.length === 2) {
-    // Zoom (Pinch)
     const newDist = getTouchDist(ev.touches);
     if(touchDist2 > 0) {
       const factor = newDist / touchDist2;
@@ -765,9 +818,7 @@ cv2.addEventListener('touchmove', (ev) => {
 
 cv2.addEventListener('touchend', () => { lastTouch2 = null; touchDist2 = 0; });
 
-// --- Touch 3D ---
 let touchDist3 = 0, lastTouch3 = null;
-
 cv3.addEventListener('touchstart', (ev) => {
   ev.preventDefault();
   if(ev.touches.length === 1) {
@@ -780,7 +831,6 @@ cv3.addEventListener('touchstart', (ev) => {
 cv3.addEventListener('touchmove', (ev) => {
   ev.preventDefault();
   if(ev.touches.length === 1 && lastTouch3) {
-    // Rotasi (Putar)
     const dx = ev.touches[0].clientX - lastTouch3.x;
     const dy = ev.touches[0].clientY - lastTouch3.y;
     cam.yaw += dx * 0.01;
@@ -788,10 +838,9 @@ cv3.addEventListener('touchmove', (ev) => {
     lastTouch3 = {x: ev.touches[0].clientX, y: ev.touches[0].clientY};
     draw3D();
   } else if(ev.touches.length === 2) {
-    // Zoom (Pinch)
     const newDist = getTouchDist(ev.touches);
     if(touchDist3 > 0) {
-      const factor = touchDist3 / newDist; // Perhatikan pembagian terbalik untuk jarak kamera
+      const factor = touchDist3 / newDist;
       cam.dist = Math.max(MIN_DIST, Math.min(MAX_DIST, cam.dist * factor));
       draw3D();
     }
