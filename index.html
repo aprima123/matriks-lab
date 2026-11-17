@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Visualisasi Matriks Interaktif</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap');
+
+  :root {
+    /* Palet Warna Bergaya Notebook/Neo-Brutalism */
+    --bg-page: #f4f1ea;       /* Warna kertas krem */
+    --grid-color: #e3ded1;    /* Garis grid kertas */
+    --ink: #111111;           /* Hitam pekat untuk teks & border */
+    
+    --hl-blue: #60c3ff;       /* Stabilo Biru */
+    --hl-green: #a3f160;      /* Stabilo Hijau Lime */
+    --hl-yellow: #ffe566;     /* Stabilo Kuning */
+    --hl-purple: #c48aff;     /* Stabilo Ungu */
+    
+    --shadow: 4px 4px 0px var(--ink);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--bg-page);
+    /* Membuat pola grid kertas */
+    background-image: 
+      linear-gradient(var(--grid-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 30px 30px;
+    color: var(--ink);
+    font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+
+  /* ===== LAYAR MENU ===== */
+  #menu-screen {
+    text-align: center;
+    animation: fadeIn 0.4s ease-out;
+    max-width: 600px;
+    background: #ffffff;
+    padding: 40px;
+    border: 3px solid var(--ink);
+    box-shadow: var(--shadow);
+    border-radius: 12px;
+  }
+  h1 { 
+    font-size: 2.8rem; 
+    margin-top: 0;
+    margin-bottom: 10px; 
+    color: var(--ink); 
+    text-transform: uppercase;
+    letter-spacing: -1px;
+  }
+  p.subtitle { 
+    font-size: 1.1rem; 
+    color: #555; 
+    margin-bottom: 30px; 
+    font-weight: 500;
+  }
+  
+  .menu-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+  .menu-btn {
+    background: var(--hl-green);
+    border: 3px solid var(--ink);
+    color: var(--ink);
+    padding: 20px 30px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.1s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    min-width: 180px;
+    box-shadow: var(--shadow);
+  }
+  .menu-btn:nth-child(2) {
+    background: var(--hl-blue);
+  }
+  .menu-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px var(--ink);
+  }
+  .menu-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0px 0px 0px var(--ink);
+  }
+  .menu-btn .icon { font-size: 2.5rem; }
+
+  /* ===== AREA KONTEN (2x2 / 3x3) ===== */
+  .app-container {
+    display: none;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+    animation: fadeIn 0.4s ease-out;
+  }
+  .app-container.active { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel {
+    background: #ffffff;
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  /* Tombol Kembali */
+  .back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: var(--hl-yellow);
+    border: 3px solid var(--ink);
+    color: var(--ink);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.1s;
+    box-shadow: var(--shadow);
+  }
+  .back-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px var(--ink);
+  }
+  .back-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0px 0px 0px var(--ink);
+  }
+
+  h2 { 
+    margin: 0 0 20px 0; 
+    font-size: 1.2rem; 
+    font-weight: 700;
+    text-transform: uppercase; 
+    border-bottom: 3px solid var(--ink);
+    padding-bottom: 10px;
+  }
+
+  /* ===== MATRIKS INPUT ===== */
+  .brackets { display: flex; gap: 12px; align-items: stretch; margin-bottom: 16px; }
+  .bracket { width: 14px; border: 3px solid var(--ink); }
+  .bracket.left { border-right: none; border-radius: 8px 0 0 8px; }
+  .bracket.right { border-left: none; border-radius: 0 8px 8px 0; }
+
+  .matrix-wrap { display: flex; flex-direction: column; gap: 12px; }
+  .row { display: flex; align-items: center; gap: 12px; }
+  
+  .row .tag {
+    font-size: 0.9rem; font-weight: 700; width: 28px; text-align: center;
+    border-radius: 6px; padding: 6px 0; border: 2px solid var(--ink);
+  }
+  
+  /* Warna Tag dengan Stabilo */
+  .row.x .tag { background: var(--hl-blue); }
+  .row.y .tag { background: var(--hl-green); }
+  .row.z .tag { background: var(--hl-purple); }
+
+  .cells { display: grid; gap: 10px; }
+  .cells.grid-2 { grid-template-columns: 1fr 1fr; width: 220px; }
+  .cells.grid-3 { grid-template-columns: 1fr 1fr 1fr; width: 280px; }
+  
+  .cells input {
+    width: 100%; padding: 12px; font-size: 1.1rem; text-align: center;
+    background: #ffffff; color: var(--ink); border-radius: 8px;
+    outline: none; transition: 0.1s; border: 3px solid var(--ink);
+    font-family: inherit; font-weight: 700;
+  }
+  .cells input:focus { 
+    background: var(--bg-page);
+    box-shadow: inset 3px 3px 0px rgba(0,0,0,0.1); 
+  }
+
+  /* ===== INFO & HINT ===== */
+  .info { 
+    margin-top: 20px; 
+    font-size: 0.95rem; 
+    line-height: 1.6; 
+    background: var(--bg-page);
+    padding: 16px;
+    border: 2px dashed var(--ink);
+    border-radius: 8px;
+  }
+  .info b { font-weight: 700; }
+  
+  .hint { 
+    font-size: 0.85rem; 
+    margin-top: 20px; 
+    font-weight: 500;
+    background: var(--hl-yellow);
+    padding: 10px 14px;
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+  }
+
+  /* ===== CANVAS ===== */
+  .canvas-wrap { position: relative; }
+  canvas { 
+    border-radius: 8px; 
+    background: #1a1a1e; /* Kanvas gelap agar warna neon/stabilo menyala */
+    border: 3px solid var(--ink); 
+    display: block; 
+    cursor: grab; 
+  }
+  canvas:active { cursor: grabbing; }
+
+  .zoom-controls { position: absolute; top: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .zoom-controls button {
+    width: 40px; height: 40px; border-radius: 8px; border: 3px solid var(--ink);
+    background: #ffffff; color: var(--ink); font-size: 1.2rem; cursor: pointer;
+    font-weight: 700; transition: 0.1s;
+    box-shadow: 2px 2px 0px var(--ink);
+  }
+  .zoom-controls button:hover { background: var(--hl-yellow); }
+  .zoom-controls button:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px var(--ink); }
+  
+  .zoom-badge {
+    position: absolute; bottom: 16px; left: 16px; font-size: 0.85rem; font-weight: 700;
+    background: #ffffff; padding: 6px 12px; border-radius: 6px; border: 2px solid var(--ink);
+    color: var(--ink);
+  }
+</style>
+</head>
+<body>
+
+  <!-- ================= LAYAR MENU ================= -->
+  <div id="menu-screen">
+    <h1>MATRIKS LAB</h1>
+    <p class="subtitle">Pilih dimensi ruang untuk dieksplorasi.</p>
+    <div class="menu-buttons">
+      <button class="menu-btn" onclick="bukaApp('2x2')">
+        <span class="icon">⊞</span>
+        2×2
+      </button>
+      <button class="menu-btn" onclick="bukaApp('3x3')">
+        <span class="icon">🧊</span>
+        3×3
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= APP 2x2 ================= -->
+  <div id="app-2x2" class="app-container">
+    <button class="back-btn" onclick="kembaliKeMenu()">← MENU</button>
+    
+    <div class="panel">
+      <h2>Matriks 2×2</h2>
+      <div class="brackets">
+        <div class="bracket left"></div>
+        <div class="matrix-wrap">
+          <div class="row x">
+            <div class="tag">x</div>
+            <div class="cells grid-2">
+              <input id="m2_00" type="number" step="0.1" value="1">
+              <input id="m2_01" type="number" step="0.1" value="0.5">
+            </div>
+          </div>
+          <div class="row y">
+            <div class="tag">y</div>
+            <div class="cells grid-2">
+              <input id="m2_10" type="number" step="0.1" value="0">
+              <input id="m2_11" type="number" step="0.1" value="1.5">
+            </div>
+          </div>
+        </div>
+        <div class="bracket right"></div>
+      </div>
+
+      <div class="info" id="info-2x2"></div>
+      <div class="hint">Scroll: <b>Zoom</b> | Drag: <b>Geser</b></div>
+    </div>
+
+    <div class="panel canvas-wrap">
+      <h2>Visualisasi 2D</h2>
+      <canvas id="cv2" width="600" height="600"></canvas>
+      <div class="zoom-controls">
+        <button id="z2_in" title="Zoom in">+</button>
+        <button id="z2_out" title="Zoom out">−</button>
+        <button id="z2_reset" title="Reset">⟲</button>
+      </div>
+      <div class="zoom-badge" id="z2_badge">100%</div>
+    </div>
+  </div>
+
+  <!-- ================= APP 3x3 ================= -->
+  <div id="app-3x3" class="app-container">
+    <button class="back-btn" onclick="kembaliKeMenu()">← MENU</button>
+
+    <div class="panel">
+      <h2>Matriks 3×3</h2>
+      <div class="brackets">
+        <div class="bracket left"></div>
+        <div class="matrix-wrap">
+          <div class="row x">
+            <div class="tag">x</div>
+            <div class="cells grid-3">
+              <input id="m3_00" type="number" step="0.1" value="1">
+              <input id="m3_01" type="number" step="0.1" value="0">
+              <input id="m3_02" type="number" step="0.1" value="0">
+            </div>
+          </div>
+          <div class="row y">
+            <div class="tag">y</div>
+            <div class="cells grid-3">
+              <input id="m3_10" type="number" step="0.1" value="0">
+              <input id="m3_11" type="number" step="0.1" value="1.2">
+              <input id="m3_12" type="number" step="0.1" value="0">
+            </div>
+          </div>
+          <div class="row z">
+            <div class="tag">z</div>
+            <div class="cells grid-3">
+              <input id="m3_20" type="number" step="0.1" value="0">
+              <input id="m3_21" type="number" step="0.1" value="0">
+              <input id="m3_22" type="number" step="0.1" value="1.5">
+            </div>
+          </div>
+        </div>
+        <div class="bracket right"></div>
+      </div>
+
+      <div class="info" id="info-3x3"></div>
+      <div class="hint">Drag Kiri: <b>Putar</b> | Drag Kanan: <b>Geser</b> | Scroll: <b>Zoom</b></div>
+    </div>
+
+    <div class="panel canvas-wrap">
+      <h2>Visualisasi 3D</h2>
+      <canvas id="cv3" width="600" height="600"></canvas>
+      <div class="zoom-controls">
+        <button id="z3_in" title="Zoom in">+</button>
+        <button id="z3_out" title="Zoom out">−</button>
+        <button id="z3_reset" title="Reset">⟲</button>
+      </div>
+      <div class="zoom-badge" id="z3_badge">100%</div>
+    </div>
+  </div>
+
+<script>
+// ==========================================
+// NAVIGASI MENU
+// ==========================================
+function bukaApp(mode) {
+  document.getElementById('menu-screen').style.display = 'none';
+  document.querySelectorAll('.app-container').forEach(el => el.classList.remove('active'));
+  
+  if(mode === '2x2') {
+    document.getElementById('app-2x2').classList.add('active');
+    setTimeout(() => { draw2D(); }, 50); 
+  } else {
+    document.getElementById('app-3x3').classList.add('active');
+    setTimeout(() => { draw3D(); }, 50);
+  }
+}
+
+function kembaliKeMenu() {
+  document.querySelectorAll('.app-container').forEach(el => el.classList.remove('active'));
+  document.getElementById('menu-screen').style.display = 'block';
+}
+
+// ==========================================
+// LOGIKA 2D (Matriks 2x2)
+// ==========================================
+const cv2 = document.getElementById('cv2');
+const ctx2 = cv2.getContext('2d');
+const W2 = cv2.width, H2 = cv2.height;
+
+let view2 = { scale: 80, cx: W2/2, cy: H2/2 };
+const MIN_SCALE = 2, MAX_SCALE = 800;
+
+const els2 = {
+  a: document.getElementById('m2_00'), b: document.getElementById('m2_01'),
+  c: document.getElementById('m2_10'), d: document.getElementById('m2_11'),
+  info: document.getElementById('info-2x2'),
+  badge: document.getElementById('z2_badge')
+};
+
+function getMatrix2() {
+  return [
+    parseFloat(els2.a.value)||0, parseFloat(els2.b.value)||0,
+    parseFloat(els2.c.value)||0, parseFloat(els2.d.value)||0
+  ];
+}
+
+function w2p2(x,y) { return [ view2.cx + x*view2.scale, view2.cy - y*view2.scale ]; }
+function p2w2(px,py) { return [ (px - view2.cx)/view2.scale, (view2.cy - py)/view2.scale ]; }
+
+function drawGrid2() {
+  ctx2.clearRect(0,0,W2,H2);
+  const [, yTop] = p2w2(0,0);
+  const [, yBottom] = p2w2(0,H2);
+  const [xLeft] = p2w2(0,0);
+  const [xRight] = p2w2(W2,0);
+
+  const rawStep = 60 / view2.scale;
+  const pow = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const mult = [1,2,5,10].find(m => m*pow >= rawStep) || 10;
+  const step = mult * pow;
+
+  ctx2.strokeStyle = '#333338'; ctx2.lineWidth = 1;
+  const startX = Math.floor(xLeft/step)*step;
+  const endX = Math.ceil(xRight/step)*step;
+  for(let x=startX; x<=endX+1e-9; x+=step){
+    const [px] = w2p2(x,0);
+    ctx2.beginPath(); ctx2.moveTo(px,0); ctx2.lineTo(px,H2); ctx2.stroke();
+  }
+  const startY = Math.floor(yBottom/step)*step;
+  const endY = Math.ceil(yTop/step)*step;
+  for(let y=startY; y<=endY+1e-9; y+=step){
+    const [,py] = w2p2(0,y);
+    ctx2.beginPath(); ctx2.moveTo(0,py); ctx2.lineTo(W2,py); ctx2.stroke();
+  }
+
+  // Sumbu X & Y
+  ctx2.lineWidth = 2;
+  ctx2.strokeStyle = 'rgba(255, 42, 85, 0.8)';
+  ctx2.beginPath(); ctx2.moveTo(0,view2.cy); ctx2.lineTo(W2,view2.cy); ctx2.stroke();
+  ctx2.strokeStyle = 'rgba(0, 255, 136, 0.8)';
+  ctx2.beginPath(); ctx2.moveTo(view2.cx,0); ctx2.lineTo(view2.cx,H2); ctx2.stroke();
+
+  // Ticks
+  ctx2.fillStyle = '#888'; ctx2.font = '11px monospace';
+  ctx2.textAlign='center'; ctx2.textBaseline='top';
+  for(let x=startX; x<=endX+1e-9; x+=step){
+    if(Math.abs(x) < step*0.001) continue;
+    const [px,py] = w2p2(x,0);
+    if(py < 0 || py > H2) continue;
+    ctx2.fillText(fmt(x), px, py+6);
+  }
+  ctx2.textAlign='right'; ctx2.textBaseline='middle';
+  for(let y=startY; y<=endY+1e-9; y+=step){
+    if(Math.abs(y) < step*0.001) continue;
+    const [px,py] = w2p2(0,y);
+    if(px < 0 || px > W2) continue;
+    ctx2.fillText(fmt(y), px-6, py);
+  }
+}
+
+function arrow2(x0,y0,x1,y1,color,{dashed=false, width=3, label=null}={}) {
+  const [p0x,p0y] = w2p2(x0,y0);
+  const [p1x,p1y] = w2p2(x1,y1);
+  ctx2.save();
+  ctx2.strokeStyle = color; ctx2.fillStyle = color;
+  ctx2.lineWidth = width; ctx2.lineCap = 'round';
+  if(dashed) ctx2.setLineDash([7,6]);
+  ctx2.beginPath(); ctx2.moveTo(p0x,p0y); ctx2.lineTo(p1x,p1y); ctx2.stroke();
+  ctx2.setLineDash([]);
+
+  const len = Math.max(8, Math.min(16, view2.scale*0.14));
+  const ang = Math.atan2(p1y-p0y, p1x-p0x);
+  const ax = p1x - Math.cos(ang)*len;
+  const ay = p1y - Math.sin(ang)*len;
+  ctx2.beginPath();
+  ctx2.moveTo(p1x,p1y);
+  ctx2.lineTo(ax + Math.cos(ang+Math.PI/2)*len*0.55, ay + Math.sin(ang+Math.PI/2)*len*0.55);
+  ctx2.lineTo(ax + Math.cos(ang-Math.PI/2)*len*0.55, ay + Math.sin(ang-Math.PI/2)*len*0.55);
+  ctx2.closePath(); ctx2.fill();
+
+  if(label){
+    ctx2.font = 'bold 12px monospace';
+    ctx2.textAlign='center'; ctx2.textBaseline='bottom';
+    const off = 14;
+    ctx2.fillText(label, p1x + Math.cos(ang)*off, p1y + Math.sin(ang)*off);
+  }
+  ctx2.restore();
+}
+
+function draw2D() {
+  drawGrid2();
+  const [a,b,c,d] = getMatrix2();
+  const iPrime = [a, c];
+  const jPrime = [b, d];
+
+  // Parallelogram
+  const pts = [ [0,0], iPrime, [iPrime[0]+jPrime[0], iPrime[1]+jPrime[1]], jPrime ].map(([x,y])=>w2p2(x,y));
+  ctx2.save();
+  ctx2.beginPath(); ctx2.moveTo(...pts[0]);
+  for(let k=1;k<pts.length;k++) ctx2.lineTo(...pts[k]);
+  ctx2.closePath();
+  ctx2.fillStyle = 'rgba(181, 0, 255, 0.15)'; // Ungu Neon
+  ctx2.strokeStyle = 'rgba(181, 0, 255, 0.8)';
+  ctx2.lineWidth = 2; ctx2.fill(); ctx2.stroke();
+  ctx2.restore();
+
+  // Vektor Asli
+  arrow2(0,0, 1,0, 'rgba(255, 42, 85, 0.5)', {dashed:true, width:2});
+  arrow2(0,0, 0,1, 'rgba(0, 255, 136, 0.5)', {dashed:true, width:2});
+
+  // Vektor Hasil
+  arrow2(0,0, iPrime[0], iPrime[1], '#ff2a55', { width:3.5, label:`i' (${fmt(iPrime[0])}, ${fmt(iPrime[1])})` });
+  arrow2(0,0, jPrime[0], jPrime[1], '#00ff88', { width:3.5, label:`j' (${fmt(jPrime[0])}, ${fmt(jPrime[1])})` });
+
+  // Titik Ujung (Stabilo Kuning & Ungu)
+  const dot2 = (x,y,color) => {
+    const [px,py] = w2p2(x,y);
+    ctx2.fillStyle = color; ctx2.beginPath(); ctx2.arc(px,py,5,0,Math.PI*2); ctx2.fill();
+  };
+  dot2(iPrime[0],iPrime[1],'#ffe566');
+  dot2(jPrime[0],jPrime[1],'#c48aff');
+
+  // Update Info
+  const tr = a+d, det = a*d-b*c;
+  const angleI = Math.atan2(iPrime[1], iPrime[0]) * 180/Math.PI;
+  const angleJ = Math.atan2(jPrime[1], jPrime[0]) * 180/Math.PI;
+  els2.info.innerHTML = `
+    Determinan: <b>${fmt(det)}</b> &nbsp;|&nbsp; Trace: <b>${fmt(tr)}</b><br>
+    <span style="color:#ff2a55; font-weight:bold;">i'</span> = (${fmt(iPrime[0])}, ${fmt(iPrime[1])}) → sudut <b>${fmt(angleI)}°</b><br>
+    <span style="color:#00ff88; font-weight:bold;">j'</span> = (${fmt(jPrime[0])}, ${fmt(jPrime[1])}) → sudut <b>${fmt(angleJ)}°</b><br>
+    Luas = |det| = <b>${fmt(Math.abs(det))}</b>
+  `;
+  els2.badge.textContent = Math.round(view2.scale / 80 * 100) + '%';
+}
+
+// ==========================================
+// LOGIKA 3D (Matriks 3x3)
+// ==========================================
+const cv3 = document.getElementById('cv3');
+const ctx3 = cv3.getContext('2d');
+const W3 = cv3.width, H3 = cv3.height;
+
+let cam = { yaw: -0.6, pitch: 0.5, dist: 8, panX: 0, panY: 0, scale: 70 };
+const MIN_DIST = 2, MAX_DIST = 30;
+
+const els3 = {
+  info: document.getElementById('info-3x3'),
+  badge: document.getElementById('z3_badge'),
+  inputs: []
+};
+for(let i=0;i<3;i++) for(let j=0;j<3;j++) els3.inputs.push(document.getElementById('m3_'+i+j));
+
+function getMatrix3() {
+  let M = [[],[],[]], idx = 0;
+  for(let i=0;i<3;i++) for(let j=0;j<3;j++) M[i][j] = parseFloat(els3.inputs[idx++].value) || 0;
+  return M;
+}
+
+function project3(x, y, z) {
+  const cosY = Math.cos(cam.yaw), sinY = Math.sin(cam.yaw);
+  let x1 = x * cosY - z * sinY;
+  let z1 = x * sinY + z * cosY;
+  const cosP = Math.cos(cam.pitch), sinP = Math.sin(cam.pitch);
+  let y2 = y * cosP - z1 * sinP;
+  let z2 = y * sinP + z1 * cosP;
+
+  const zCam = z2 + cam.dist;
+  const fov = 500; 
+  const scaleFactor = (fov / zCam) * (cam.scale / 70);
+  return { x: W3/2 + x1 * scaleFactor + cam.panX, y: H3/2 - y2 * scaleFactor + cam.panY, z: zCam };
+}
+
+function drawLine3D(p1, p2, color, width=1, dashed=false) {
+  const a = project3(...p1), b = project3(...p2);
+  ctx3.save(); ctx3.strokeStyle = color; ctx3.lineWidth = width;
+  if(dashed) ctx3.setLineDash([6,6]);
+  ctx3.beginPath(); ctx3.moveTo(a.x, a.y); ctx3.lineTo(b.x, b.y); ctx3.stroke();
+  ctx3.restore();
+}
+
+function drawArrow3D(origin, vec, color, dashed=false, label="") {
+  const start = project3(...origin), end = project3(...vec);
+  ctx3.save(); ctx3.strokeStyle = color; ctx3.fillStyle = color; ctx3.lineWidth = 3;
+  if(dashed) ctx3.setLineDash([6,6]);
+  ctx3.beginPath(); ctx3.moveTo(start.x, start.y); ctx3.lineTo(end.x, end.y); ctx3.stroke();
+  ctx3.setLineDash([]);
+  
+  const ang = Math.atan2(end.y - start.y, end.x - start.x);
+  const len = 10;
+  const ax = end.x - Math.cos(ang)*len, ay = end.y - Math.sin(ang)*len;
+  ctx3.beginPath(); ctx3.moveTo(end.x, end.y);
+  ctx3.lineTo(ax + Math.cos(ang+Math.PI/2)*len*0.5, ay + Math.sin(ang+Math.PI/2)*len*0.5);
+  ctx3.lineTo(ax + Math.cos(ang-Math.PI/2)*len*0.5, ay + Math.sin(ang-Math.PI/2)*len*0.5);
+  ctx3.closePath(); ctx3.fill();
+
+  if(label) {
+    ctx3.font = 'bold 12px monospace'; ctx3.textAlign='center'; ctx3.textBaseline='bottom';
+    ctx3.fillText(label, end.x + Math.cos(ang)*15, end.y + Math.sin(ang)*15);
+  }
+  ctx3.restore();
+}
+
+function drawPolygon3D(pts, colorFill, colorStroke) {
+  const proj = pts.map(p => project3(...p));
+  ctx3.save(); ctx3.beginPath(); ctx3.moveTo(proj[0].x, proj[0].y);
+  for(let i=1; i<proj.length; i++) ctx3.lineTo(proj[i].x, proj[i].y);
+  ctx3.closePath();
+  if(colorFill) { ctx3.fillStyle = colorFill; ctx3.fill(); }
+  if(colorStroke) { ctx3.strokeStyle = colorStroke; ctx3.lineWidth = 1.5; ctx3.stroke(); }
+  ctx3.restore();
+}
+
+function drawGrid3D() {
+  const N = 4;
+  for(let i=-N; i<=N; i++) {
+    drawLine3D([i,0,-N], [i,0,N], '#333338');
+    drawLine3D([-N,0,i], [N,0,i], '#333338');
+  }
+}
+
+function draw3D() {
+  ctx3.clearRect(0,0,W3,H3);
+  drawGrid3D();
+
+  // Sumbu 3D (Neon)
+  drawLine3D([-4,0,0], [4,0,0], 'rgba(255, 42, 85, 0.6)');
+  drawLine3D([0,-4,0], [0,4,0], 'rgba(0, 255, 136, 0.6)');
+  drawLine3D([0,0,-4], [0,0,4], 'rgba(0, 210, 255, 0.6)');
+
+  const M = getMatrix3();
+  const iPrime = [M[0][0], M[1][0], M[2][0]];
+  const jPrime = [M[0][1], M[1][1], M[2][1]];
+  const kPrime = [M[0][2], M[1][2], M[2][2]];
+
+  const o = [0,0,0];
+  const ij = [iPrime[0]+jPrime[0], iPrime[1]+jPrime[1], iPrime[2]+jPrime[2]];
+  const jk = [jPrime[0]+kPrime[0], jPrime[1]+kPrime[1], jPrime[2]+kPrime[2]];
+  const ki = [kPrime[0]+iPrime[0], kPrime[1]+iPrime[1], kPrime[2]+iPrime[2]];
+  const ijk = [ij[0]+kPrime[0], ij[1]+kPrime[1], ij[2]+kPrime[2]];
+
+  const faces = [
+    [o, iPrime, ij, jPrime], [kPrime, ki, ijk, jk], [o, iPrime, ki, kPrime],
+    [jPrime, ij, ijk, jk], [o, jPrime, jk, kPrime], [iPrime, ij, ijk, ki]
+  ];
+  faces.forEach(f => drawPolygon3D(f, 'rgba(181, 0, 255, 0.1)', 'rgba(181, 0, 255, 0.4)'));
+
+  drawArrow3D([0,0,0], [1,0,0], 'rgba(255, 42, 85, 0.5)', true);
+  drawArrow3D([0,0,0], [0,1,0], 'rgba(0, 255, 136, 0.5)', true);
+  drawArrow3D([0,0,0], [0,0,1], 'rgba(0, 210, 255, 0.5)', true);
+
+  drawArrow3D([0,0,0], iPrime, '#ff2a55', false, `i' (${fmt(iPrime[0])},${fmt(iPrime[1])},${fmt(iPrime[2])})`);
+  drawArrow3D([0,0,0], jPrime, '#00ff88', false, `j' (${fmt(jPrime[0])},${fmt(jPrime[1])},${fmt(jPrime[2])})`);
+  drawArrow3D([0,0,0], kPrime, '#00d2ff', false, `k' (${fmt(kPrime[0])},${fmt(kPrime[1])},${fmt(kPrime[2])})`);
+
+  const det = M[0][0]*(M[1][1]*M[2][2]-M[1][2]*M[2][1]) - M[0][1]*(M[1][0]*M[2][2]-M[1][2]*M[2][0]) + M[0][2]*(M[1][0]*M[2][1]-M[1][1]*M[2][0]);
+  const tr = M[0][0] + M[1][1] + M[2][2];
+  
+  els3.info.innerHTML = `
+    Determinan: <b>${fmt(det)}</b> &nbsp;|&nbsp; Trace: <b>${fmt(tr)}</b><br>
+    <span style="color:#ff2a55; font-weight:bold;">i'</span> = (${fmt(iPrime[0])}, ${fmt(iPrime[1])}, ${fmt(iPrime[2])})<br>
+    <span style="color:#00ff88; font-weight:bold;">j'</span> = (${fmt(jPrime[0])}, ${fmt(jPrime[1])}, ${fmt(jPrime[2])})<br>
+    <span style="color:#00d2ff; font-weight:bold;">k'</span> = (${fmt(kPrime[0])}, ${fmt(kPrime[1])}, ${fmt(kPrime[2])})<br>
+    Volume = |det| = <b>${fmt(Math.abs(det))}</b>
+  `;
+  els3.badge.textContent = Math.round((8 / cam.dist) * 100) + '%';
+}
+
+function fmt(n) {
+  if(Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
+  return n.toFixed(2).replace(/\.?0+$/,'');
+}
+
+// ==========================================
+// EVENT LISTENERS
+// ==========================================
+['m2_00', 'm2_01', 'm2_10', 'm2_11'].forEach(id => document.getElementById(id).addEventListener('input', draw2D));
+
+cv2.addEventListener('wheel', (ev) => {
+  if(!document.getElementById('app-2x2').classList.contains('active')) return;
+  ev.preventDefault();
+  const rect = cv2.getBoundingClientRect();
+  const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
+  const [wx, wy] = p2w2(mx, my);
+  const factor = ev.deltaY < 0 ? 1.15 : 1/1.15;
+  view2.scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, view2.scale * factor));
+  view2.cx = mx - wx * view2.scale;
+  view2.cy = my + wy * view2.scale;
+  draw2D();
+}, { passive: false });
+
+let isDragging2 = false, last2 = null;
+cv2.addEventListener('mousedown', (ev) => { isDragging2 = true; last2 = {x:ev.clientX, y:ev.clientY}; });
+window.addEventListener('mousemove', (ev) => {
+  if(!isDragging2) return;
+  view2.cx += ev.clientX - last2.x; view2.cy += ev.clientY - last2.y;
+  last2 = {x:ev.clientX, y:ev.clientY};
+  draw2D();
+});
+window.addEventListener('mouseup', () => isDragging2 = false);
+
+document.getElementById('z2_in').onclick = () => { view2.scale = Math.min(MAX_SCALE, view2.scale * 1.25); draw2D(); };
+document.getElementById('z2_out').onclick = () => { view2.scale = Math.max(MIN_SCALE, view2.scale / 1.25); draw2D(); };
+document.getElementById('z2_reset').onclick = () => { view2 = { scale: 80, cx: W2/2, cy: H2/2 }; draw2D(); };
+
+els3.inputs.forEach(inp => inp.addEventListener('input', draw3D));
+
+let isDragging3 = false, isPanning3 = false, last3 = {x:0, y:0};
+cv3.addEventListener('mousedown', (e) => {
+  if(e.button === 0) isDragging3 = true;
+  if(e.button === 2) isPanning3 = true;
+  last3 = {x:e.clientX, y:e.clientY};
+});
+window.addEventListener('mouseup', () => { isDragging3 = false; isPanning3 = false; });
+window.addEventListener('mousemove', (e) => {
+  if(!isDragging3 && !isPanning3) return;
+  const dx = e.clientX - last3.x, dy = e.clientY - last3.y;
+  last3 = {x:e.clientX, y:e.clientY};
+
+  if(isDragging3) {
+    cam.yaw += dx * 0.01;
+    cam.pitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, cam.pitch + dy * 0.01));
+    draw3D();
+  }
+  if(isPanning3) {
+    cam.panX += dx; cam.panY += dy;
+    draw3D();
+  }
+});
+cv3.addEventListener('contextmenu', e => e.preventDefault());
+
+cv3.addEventListener('wheel', (e) => {
+  if(!document.getElementById('app-3x3').classList.contains('active')) return;
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 0.9 : 1.1;
+  cam.dist = Math.max(MIN_DIST, Math.min(MAX_DIST, cam.dist * factor));
+  draw3D();
+}, { passive: false });
+
+document.getElementById('z3_in').onclick = () => { cam.dist = Math.max(MIN_DIST, cam.dist * 0.8); draw3D(); };
+document.getElementById('z3_out').onclick = () => { cam.dist = Math.min(MAX_DIST, cam.dist * 1.25); draw3D(); };
+document.getElementById('z3_reset').onclick = () => { cam = { yaw:-0.6, pitch:0.5, dist:8, panX:0, panY:0, scale:70 }; draw3D(); };
+
+</script>
+</body>
+</html>
