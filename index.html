@@ -35,7 +35,6 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
-    /* Default untuk desktop: tidak bisa scroll */
     overflow: hidden; 
     touch-action: none; 
   }
@@ -194,6 +193,9 @@
     border: 2px solid var(--ink); border-radius: 6px;
   }
 
+  /* Class untuk menyembunyikan teks desktop/mobile */
+  .hint-mobile { display: none; }
+
   /* ===== CANVAS ===== */
   .canvas-wrap { position: relative; display: flex; flex-direction: column; }
   
@@ -230,9 +232,9 @@
   @media (max-width: 800px) {
     body { 
       justify-content: flex-start; 
-      padding: 80px 10px 30px 10px; /* Padding atas untuk tombol, bawah agar tidak mentok */
-      overflow-y: auto; /* IZINKAN SCROLL DI HP */
-      touch-action: pan-y; /* Izinkan scroll vertikal di area non-canvas */
+      padding: 80px 10px 30px 10px; 
+      overflow-y: auto; 
+      touch-action: pan-y; 
     }
     
     #menu-screen { padding: 25px 20px; width: 100%; max-width: 400px; margin-top: 20px; }
@@ -260,10 +262,15 @@
     .info { font-size: 0.8rem; padding: 10px; }
     .hint { font-size: 0.75rem; padding: 6px 10px; }
 
+    /* Sembunyikan tombol zoom +/- di HP */
     .zoom-controls { display: none; }
     .zoom-badge { bottom: 8px; left: 8px; font-size: 0.7rem; padding: 2px 8px; }
     
     .back-btn { top: 15px; left: 15px; padding: 8px 14px; font-size: 0.85rem; }
+
+    /* Tampilkan hint mobile, sembunyikan hint desktop */
+    .hint-desktop { display: none; }
+    .hint-mobile { display: inline; }
   }
 </style>
 </head>
@@ -285,7 +292,7 @@
     </div>
   </div>
 
-  <!-- TOMBOL KEMBALI (Diletakkan di luar container aplikasi) -->
+  <!-- TOMBOL KEMBALI -->
   <button id="global-back-btn" class="back-btn" onclick="kembaliKeMenu()">← MENU</button>
 
   <!-- ================= APP 2x2 ================= -->
@@ -314,7 +321,12 @@
       </div>
 
       <div class="info" id="info-2x2"></div>
-      <div class="hint">1 Jari: <b>Geser</b> | 2 Jari: <b>Zoom</b></div>
+      
+      <!-- Teks Petunjuk Desktop & Mobile -->
+      <div class="hint">
+        <span class="hint-desktop">Scroll: <b>Zoom</b> | Drag: <b>Geser</b></span>
+        <span class="hint-mobile">1 Jari: <b>Geser</b> | 2 Jari: <b>Zoom</b></span>
+      </div>
     </div>
 
     <div class="panel canvas-wrap">
@@ -365,7 +377,12 @@
       </div>
 
       <div class="info" id="info-3x3"></div>
-      <div class="hint">1 Jari: <b>Putar</b> | 2 Jari: <b>Zoom</b></div>
+      
+      <!-- Teks Petunjuk Desktop & Mobile -->
+      <div class="hint">
+        <span class="hint-desktop">Drag Kiri: <b>Putar</b> | Drag Kanan: <b>Geser</b> | Scroll: <b>Zoom</b></span>
+        <span class="hint-mobile">1 Jari: <b>Putar</b> | 2 Jari: <b>Zoom</b></span>
+      </div>
     </div>
 
     <div class="panel canvas-wrap">
@@ -390,15 +407,13 @@ function bukaApp(mode) {
   document.getElementById('menu-screen').style.display = 'none';
   document.querySelectorAll('.app-container').forEach(el => el.classList.remove('active'));
   
-  // Sembunyikan tombol kembali dulu setiap kali ganti mode
   backBtn.classList.remove('show');
 
   if(mode === '2x2') {
     document.getElementById('app-2x2').classList.add('active');
-    // Render grafik, lalu munculkan tombol setelah jeda sedikit
     setTimeout(() => { 
       draw2D(); 
-      backBtn.classList.add('show'); // Animasi fade in + slide down
+      backBtn.classList.add('show');
     }, 50); 
   } else {
     document.getElementById('app-3x3').classList.add('active');
@@ -412,13 +427,12 @@ function bukaApp(mode) {
 function kembaliKeMenu() {
   document.querySelectorAll('.app-container').forEach(el => el.classList.remove('active'));
   document.getElementById('menu-screen').style.display = 'block';
-  backBtn.classList.remove('show'); // Sembunyikan tombol saat di menu
+  backBtn.classList.remove('show');
 }
 
 // ==========================================
 // LOGIKA 2D (Matriks 2x2)
 // ==========================================
-// ... (Logika 2D tetap sama persis seperti sebelumnya) ...
 const cv2 = document.getElementById('cv2');
 const ctx2 = cv2.getContext('2d');
 const W2 = cv2.width, H2 = cv2.height;
@@ -565,7 +579,6 @@ function draw2D() {
 // ==========================================
 // LOGIKA 3D (Matriks 3x3)
 // ==========================================
-// ... (Logika 3D tetap sama persis seperti sebelumnya) ...
 const cv3 = document.getElementById('cv3');
 const ctx3 = cv3.getContext('2d');
 const W3 = cv3.width, H3 = cv3.height;
