@@ -17,11 +17,9 @@ Karena ini adalah project murni frontend, kamu cukup mengunduh atau meng-clone r
 ## 📸 Preview Tampilan
 
 <p align="center">
-  <img src="preview.png" alt="Preview Matriks Lab" width="100%" style="border-radius: 10px; border: 2px solid #333;">
-</p>
-
-<p align="center">
-  <img src="preview2.png" alt="Preview Matriks Lab" width="100%" style="border-radius: 10px; border: 2px solid #333;">
+  <img src="preview.png" alt="Preview 1" width="100%">
+  <br><br>
+  <img src="preview2.png" alt="Preview 2" width="100%">
 </p>
 
 ## 🛠️ Teknologi yang Digunakan
