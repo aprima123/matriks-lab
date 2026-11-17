@@ -16,10 +16,12 @@ Karena ini adalah project murni frontend, kamu cukup mengunduh atau meng-clone r
 
 ## 📸 Preview Tampilan
 
-*(Ganti `preview.png` dengan nama file screenshot milikmu setelah kamu menyimpannya di folder ini)*
-
 <p align="center">
   <img src="preview.png" alt="Preview Matriks Lab" width="100%" style="border-radius: 10px; border: 2px solid #333;">
+</p>
+
+<p align="center">
+  <img src="preview2.png" alt="Preview Matriks Lab" width="100%" style="border-radius: 10px; border: 2px solid #333;">
 </p>
 
 ## 🛠️ Teknologi yang Digunakan
